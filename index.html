@@ -72,6 +72,14 @@
     <footer id="contact">
         <h2>Contact Me</h2>
         <p>I am open to learning opportunities and collaborations.</p>
+        <form id="notion-note-form" class="note-form">
+            <h3>Save a Note to Notion</h3>
+            <input type="text" id="note-title" name="title" placeholder="Title" required>
+            <textarea id="note-content" name="content" rows="4" placeholder="Content"></textarea>
+            <input type="text" id="note-tags" name="tags" placeholder="Tags (comma separated)">
+            <button type="submit" class="btn">Save to Notion</button>
+            <p id="note-status" class="note-status" aria-live="polite"></p>
+        </form>
         <div class="social-links">
             <a href="https://github.com/yourusername" target="_blank"><i class="fab fa-github"></i> GitHub</a>
             <a href="mailto:yourname@example.com"><i class="fas fa-envelope"></i> Email</a>
@@ -79,5 +87,6 @@
         <p class="copyright">&copy; 2026 Peng Yixuan. All Rights Reserved.</p>
     </footer>
 
+    <script src="js/main.js"></script>
 </body>
 </html>
