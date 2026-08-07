@@ -1,32 +1,20 @@
 require('dotenv').config();
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
-const requestsPerMinute = 120;
-const requestWindowMs = 60 * 1000;
-const requestLog = new Map();
 
 app.use(express.json());
-
-app.use((req, res, next) => {
-    const key = req.ip || req.socket.remoteAddress || 'unknown';
-    const now = Date.now();
-    const current = requestLog.get(key);
-
-    if (!current || now - current.windowStart > requestWindowMs) {
-        requestLog.set(key, { count: 1, windowStart: now });
-        return next();
-    }
-
-    if (current.count >= requestsPerMinute) {
-        return res.status(429).json({ error: 'Too many requests. Try again later.' });
-    }
-
-    current.count += 1;
-    return next();
-});
+app.use(
+    rateLimit({
+        windowMs: 60 * 1000,
+        limit: 120,
+        standardHeaders: true,
+        legacyHeaders: false
+    })
+);
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
