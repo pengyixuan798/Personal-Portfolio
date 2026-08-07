@@ -4,9 +4,31 @@ const path = require('path');
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
+const requestsPerMinute = 120;
+const requestWindowMs = 60 * 1000;
+const requestLog = new Map();
 
 app.use(express.json());
-app.use(express.static(__dirname));
+
+app.use((req, res, next) => {
+    const key = req.ip || req.socket.remoteAddress || 'unknown';
+    const now = Date.now();
+    const current = requestLog.get(key);
+
+    if (!current || now - current.windowStart > requestWindowMs) {
+        requestLog.set(key, { count: 1, windowStart: now });
+        return next();
+    }
+
+    if (current.count >= requestsPerMinute) {
+        return res.status(429).json({ error: 'Too many requests. Try again later.' });
+    }
+
+    current.count += 1;
+    return next();
+});
+
+app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.post('/api/notes', async (req, res) => {
     const notionToken = process.env.NOTION_TOKEN;
@@ -89,7 +111,15 @@ app.post('/api/notes', async (req, res) => {
     }
 });
 
-app.use((req, res) => {
+app.get('/css/style.css', (req, res) => {
+    res.sendFile(path.join(__dirname, 'css', 'style.css'));
+});
+
+app.get('/js/main.js', (req, res) => {
+    res.sendFile(path.join(__dirname, 'js', 'main.js'));
+});
+
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
